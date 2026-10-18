@@ -1,7 +1,12 @@
 const r = require("raylib");
 
-let a = 0;
-let b = 0;
+let circleX = 0;
+let circleY;
+
+const circle1_radius = 2;
+const circle2_radius = 10;
+
+let scaledSinValue = 0;
 
 const line = {
     start: {
@@ -44,26 +49,27 @@ function colorUpdate(color1, color2, angle) {
     color2.b = blueIntensity;
 }
 
-function update() {
-    if (a < 900) {
-        a += 1;
-        const radians = convertToRadian(a);
-        b = (Math.sin(radians) * 100) | 0;
-        colorUpdate(color1, color2, radians);
-    }
-}
-
-
 function convertToRadian(angle) {
     return angle * (Math.PI / 180);
+}
+
+function update() {
+    if (circleX < 900) {
+        circleX += 1;
+        const radians = convertToRadian(circleX);
+        scaledSinValue = (Math.sin(radians) * 100) | 0;
+        circleY = 200 - scaledSinValue;
+        colorUpdate(color1, color2, radians);
+    }
 }
 
 function draw() {
     r.BeginDrawing();
 
+
     r.DrawLineEx(line.start, line.end, 5, r.WHITE);
-    r.DrawCircle(a, (-b) + 200, 2, color1);
-    r.DrawCircle(a, (-b) + 200, 10, color2);
+    r.DrawCircle(circleX, circleY, circle1_radius, color1);
+    r.DrawCircle(circleX, circleY, circle2_radius, color2);
 
     r.EndDrawing();
 }
