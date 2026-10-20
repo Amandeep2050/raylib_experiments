@@ -14,8 +14,13 @@ function copyArray(arr) {
                 x: arr[i].startPos.x,
                 y: arr[i].startPos.y,
             },
+            prevPos: {
+                x: arr[i].prevPos.x,
+                y: arr[i].prevPos.y,
+            },
             angle: arr[i].angle,
             radius: arr[i].radius,
+            distance: arr[i].distance,
         }
         copyArr.push(star);
     }
@@ -25,8 +30,8 @@ function copyArray(arr) {
 
 function setup() {
     const screen = {
-        WIDTH: 1200,
-        HEIGHT: 800,
+        WIDTH: 1500,
+        HEIGHT: 900,
         TITLE: "Starfield",
         FPS: 40,
     }
@@ -38,14 +43,11 @@ function setup() {
 
     const starProp = {
         numberOfStars: 1000,
-        maxRadius: 4,
+        maxRadius: 6,
     }
 
-    const stars = u.generateStars(starProp, screen);
+    const stars = u.generateStars(starProp, screen);;
     const copyStars = copyArray(stars);
-    // console.log(stars);
-    // console.log(copyStars);
-    // console.log(stars === copyStars);
 
     r.SetTraceLogLevel(r.LOG_NONE);
     r.InitWindow(screen.WIDTH, screen.HEIGHT, screen.TITLE);
@@ -66,6 +68,7 @@ function update(world) {
 function drawStars(stars) {
     for (const star of stars) {
         r.DrawCircleV(star.startPos, star.radius, r.WHITE);
+        r.DrawLineEx(star.startPos, star.prevPos, 2, r.WHITE);
     }
 }
 

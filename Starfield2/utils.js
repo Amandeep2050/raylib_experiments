@@ -4,25 +4,28 @@ function randomBetween(lower, upper) {
     return Math.floor(lower + Math.random() * (upper - lower));
 }
 
-function calcAngle(screen, startPos) {
-    const slope = (screen.center.y - startPos.y) / (screen.center.x - startPos.x);
+function calcAngle(point1, point2) {
+    const slope = (point2.y - point1.y) / (point2.x - point1.x);
 
     return Math.atan(slope);
 }
 
+function calcDistanceBetween(point1, point2) {
+    return Math.round(Math.sqrt((point2.y - point1.y) ** 2 + (point2.x - point2.y) ** 2));
+}
+
 function getNewPosition(screen, maxRadius) {
-    const avgX = (randomBetween(0, screen.WIDTH) + randomBetween(0, screen.WIDTH) + randomBetween(0, screen.WIDTH)) / 3;
+    const startPos = { x: randomBetween(0, screen.WIDTH), y: randomBetween(0, screen.HEIGHT) };
+    const prevPos = { x: startPos.x, y: startPos.y };
 
-    const avgY = (randomBetween(0, screen.HEIGHT) + randomBetween(0, screen.HEIGHT) + randomBetween(0, screen.HEIGHT)) / 3;
+    const angle = calcAngle(startPos, screen.center);
 
-    const startPos = { x: avgX, y: avgY };
+    const radius = 0;
 
-    const angle = calcAngle(screen, startPos);
-
-    const radius = randomBetween(1, maxRadius);
+    const distance = calcDistanceBetween(screen.center, startPos);
 
     return {
-        startPos, angle, radius
+        startPos, distance, prevPos, angle, radius
     };
 }
 
@@ -42,24 +45,19 @@ function isOutOfBound(start, end, point) {
 }
 
 function updateStar(stars, screen) {
-    if (stars.startPos.x < screen.WIDTH / 2) {
-        stars.startPos.y -= r.GetMouseX() / 20 * Math.sin(stars.angle);
-        stars.startPos.x -= r.GetMouseX() / 20 * Math.cos(stars.angle);
-    } else {
-        stars.startPos.y += r.GetMouseX() / 20 * Math.sin(stars.angle);
-        stars.startPos.x += r.GetMouseX() / 20 * Math.cos(stars.angle);
-    }
-}
+    const vf = (stars.radius) * (r.GetMouseX() / 10);
 
-function copyStar(star) {
-    return {
-        startPos: {
-            x: star.startPos.x,
-            y: star.startPos.y,
-        },
-        angle: star.angle,
-        radius: star.radius,
-    };
+    const velocity = stars.startPos.x < screen.WIDTH / 2 ? -vf : vf;
+
+    stars.prevPos.x = stars.startPos.x;
+    stars.prevPos.y = stars.startPos.y;
+
+    stars.startPos.y += velocity * Math.sin(stars.angle);
+    stars.startPos.x += velocity * Math.cos(stars.angle);
+
+    stars.radius = stars.radius < 4 && r.GetMouseX() > 20 ? stars.radius + 0.05 : stars.radius;
+
+    stars.distance = calcDistanceBetween(screen.center, stars.startPos);
 }
 
 function updateStars(world) {
@@ -67,12 +65,11 @@ function updateStars(world) {
     const screen = world.screen;
 
     for (let i = 0; i < stars.length; i++) {
-        // if (stars[i].startPos.x < screen.WIDTH) stars[i].angle = -stars[i].angle;
 
         updateStar(stars[i], screen);
 
-        if (isOutOfBound(0, screen.WIDTH, stars[i].startPos.x) || isOutOfBound(0, screen.HEIGHT, stars[i].startPos.y)) {
-            stars[i] = copyStar(world.copyStars[i]);
+        if (isOutOfBound(-100, screen.WIDTH + 100, stars[i].startPos.x) || isOutOfBound(-100, screen.HEIGHT + 100, stars[i].startPos.y)) {
+            stars[i] = getNewPosition(screen, world.starProp.maxRadius);
         }
     }
 }
